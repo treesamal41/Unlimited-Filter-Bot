@@ -3,10 +3,15 @@ import math
 import json
 import time
 import shutil
-import heroku3
+try:
+    import heroku3
+    HEROKU_AVAILABLE = True
+except ImportError:
+    heroku3 = None
+    HEROKU_AVAILABLE = False
 import requests
 
-from pyrogram import filters
+from pyrogram import filters, enums
 from pyrogram import Client as trojanz
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
@@ -25,14 +30,14 @@ from database.users_mdb import add_user, find_user, all_users
 async def showid(client, message):
     chat_type = message.chat.type
 
-    if chat_type == "private":
+    if chat_type == enums.ChatType.PRIVATE:
         user_id = message.chat.id
         await message.reply_text(
             f"Your ID : `{user_id}`",
-            parse_mode="md",
+            parse_mode=enums.ParseMode.MARKDOWN,
             quote=True
         )
-    elif (chat_type == "group") or (chat_type == "supergroup"):
+    elif (chat_type == enums.ChatType.GROUP) or (chat_type == enums.ChatType.SUPERGROUP):
         user_id = message.from_user.id
         chat_id = message.chat.id
         if message.reply_to_message:
@@ -41,7 +46,7 @@ async def showid(client, message):
             reply_id = ""
         await message.reply_text(
             f"Your ID : `{user_id}`\nThis Group ID : `{chat_id}`\n\n{reply_id}",
-            parse_mode="md",
+            parse_mode=enums.ParseMode.MARKDOWN,
             quote=True
         )   
 
@@ -59,10 +64,10 @@ async def showinfo(client, message):
             try:
                 checkid = int(id)
             except:
-                await message.reply_text("__Enter a valid USER ID__", quote=True, parse_mode="md")
+                await message.reply_text("__Enter a valid USER ID__", quote=True, parse_mode=enums.ParseMode.MARKDOWN)
                 return
         else:
-            await message.reply_text("__Enter a valid USER ID__", quote=True, parse_mode="md")
+            await message.reply_text("__Enter a valid USER ID__", quote=True, parse_mode=enums.ParseMode.MARKDOWN)
             return           
 
         if Config.SAVE_USER == "yes":
@@ -78,7 +83,7 @@ async def showinfo(client, message):
                 pass
 
         if not name:
-            await message.reply_text("__USER Details not found!!__", quote=True, parse_mode="md")
+            await message.reply_text("__USER Details not found!!__", quote=True, parse_mode=enums.ParseMode.MARKDOWN)
             return
     else:
         if message.reply_to_message:
@@ -106,7 +111,7 @@ async def showinfo(client, message):
         f"<b>Permanant USER link</b> : <a href='tg://user?id={id}'>Click here!</a>\n\n"
         f"<b>DC ID</b> : {dcid}\n\n",
         quote=True,
-        parse_mode="html"
+        parse_mode=enums.ParseMode.HTML
     )
 
 
@@ -123,7 +128,7 @@ async def bot_status(client,message):
     else:
         userstats = ""
 
-    if Config.HEROKU_API_KEY:
+    if Config.HEROKU_API_KEY and HEROKU_AVAILABLE:
         try:
             server = heroku3.from_key(Config.HEROKU_API_KEY)
 
@@ -205,7 +210,7 @@ async def bot_status(client,message):
         f"{quota_details}"
         f"{disk}",
         quote=True,
-        parse_mode="md"
+        parse_mode=enums.ParseMode.MARKDOWN
     )
 
 

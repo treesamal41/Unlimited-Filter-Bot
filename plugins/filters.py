@@ -3,7 +3,7 @@ import re
 import io
 import pyrogram
 
-from pyrogram import filters, Client
+from pyrogram import filters, Client, enums
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
 if bool(os.environ.get("WEBHOOK", False)):
@@ -31,9 +31,9 @@ async def addfilter(client, message):
       
     userid = message.from_user.id
     chat_type = message.chat.type
-    args = message.text.html.split(None, 1)
+    args = (message.text or "").split(None, 1)
 
-    if chat_type == "private":
+    if chat_type == enums.ChatType.PRIVATE:
         grpid = await active_connection(str(userid))
         if grpid is not None:
             grp_id = grpid
@@ -47,7 +47,7 @@ async def addfilter(client, message):
             await message.reply_text("I'm not connected to any groups!", quote=True)
             return
 
-    elif (chat_type == "group") or (chat_type == "supergroup"):
+    elif (chat_type == enums.ChatType.GROUP) or (chat_type == enums.ChatType.SUPERGROUP):
         grp_id = message.chat.id
         title = message.chat.title
 
@@ -55,7 +55,7 @@ async def addfilter(client, message):
         return
 
     st = await client.get_chat_member(grp_id, userid)
-    if not ((st.status == "administrator") or (st.status == "creator") or (str(userid) in Config.AUTH_USERS)):
+    if not ((st.status == enums.ChatMemberStatus.ADMINISTRATOR) or (st.status == enums.ChatMemberStatus.OWNER) or (str(userid) in Config.AUTH_USERS)):
         return
         
 
@@ -89,9 +89,9 @@ async def addfilter(client, message):
                   message.reply_to_message.sticker
             if msg:
                 fileid = msg.file_id
-                reply_text = message.reply_to_message.caption.html
+                reply_text = (message.reply_to_message.caption or "")
             else:
-                reply_text = message.reply_to_message.text.html
+                reply_text = message.reply_to_(message.text or "")
                 fileid = None
             alert = None
         except:
@@ -103,7 +103,7 @@ async def addfilter(client, message):
     elif message.reply_to_message and message.reply_to_message.photo:
         try:
             fileid = message.reply_to_message.photo.file_id
-            reply_text, btn, alert = parser(message.reply_to_message.caption.html, text)
+            reply_text, btn, alert = parser((message.reply_to_message.caption or ""), text)
         except:
             reply_text = ""
             btn = "[]"
@@ -112,7 +112,7 @@ async def addfilter(client, message):
     elif message.reply_to_message and message.reply_to_message.video:
         try:
             fileid = message.reply_to_message.video.file_id
-            reply_text, btn, alert = parser(message.reply_to_message.caption.html, text)
+            reply_text, btn, alert = parser((message.reply_to_message.caption or ""), text)
         except:
             reply_text = ""
             btn = "[]"
@@ -121,7 +121,7 @@ async def addfilter(client, message):
     elif message.reply_to_message and message.reply_to_message.audio:
         try:
             fileid = message.reply_to_message.audio.file_id
-            reply_text, btn, alert = parser(message.reply_to_message.caption.html, text)
+            reply_text, btn, alert = parser((message.reply_to_message.caption or ""), text)
         except:
             reply_text = ""
             btn = "[]"
@@ -130,7 +130,7 @@ async def addfilter(client, message):
     elif message.reply_to_message and message.reply_to_message.document:
         try:
             fileid = message.reply_to_message.document.file_id
-            reply_text, btn, alert = parser(message.reply_to_message.caption.html, text)
+            reply_text, btn, alert = parser((message.reply_to_message.caption or ""), text)
         except:
             reply_text = ""
             btn = "[]"
@@ -139,7 +139,7 @@ async def addfilter(client, message):
     elif message.reply_to_message and message.reply_to_message.animation:
         try:
             fileid = message.reply_to_message.animation.file_id
-            reply_text, btn, alert = parser(message.reply_to_message.caption.html, text)
+            reply_text, btn, alert = parser((message.reply_to_message.caption or ""), text)
         except:
             reply_text = ""
             btn = "[]"
@@ -157,7 +157,7 @@ async def addfilter(client, message):
     elif message.reply_to_message and message.reply_to_message.text:
         try:
             fileid = None
-            reply_text, btn, alert = parser(message.reply_to_message.text.html, text)
+            reply_text, btn, alert = parser(message.reply_to_(message.text or ""), text)
         except:
             reply_text = ""
             btn = "[]"
@@ -171,7 +171,7 @@ async def addfilter(client, message):
     await message.reply_text(
         f"Filter for  `{text}`  added in  **{title}**",
         quote=True,
-        parse_mode="md"
+        parse_mode=enums.ParseMode.MARKDOWN
     )
 
 
@@ -180,7 +180,7 @@ async def get_all(client, message):
     
     chat_type = message.chat.type
     userid = message.from_user.id
-    if chat_type == "private":
+    if chat_type == enums.ChatType.PRIVATE:
         
         grpid = await active_connection(str(userid))
         if grpid is not None:
@@ -195,7 +195,7 @@ async def get_all(client, message):
             await message.reply_text("I'm not connected to any groups!", quote=True)
             return
 
-    elif (chat_type == "group") or (chat_type == "supergroup"):
+    elif (chat_type == enums.ChatType.GROUP) or (chat_type == enums.ChatType.SUPERGROUP):
         grp_id = message.chat.id
         title = message.chat.title
 
@@ -203,7 +203,7 @@ async def get_all(client, message):
         return
 
     st = await client.get_chat_member(grp_id, userid)
-    if not ((st.status == "administrator") or (st.status == "creator") or (str(userid) in Config.AUTH_USERS)):
+    if not ((st.status == enums.ChatMemberStatus.ADMINISTRATOR) or (st.status == enums.ChatMemberStatus.OWNER) or (str(userid) in Config.AUTH_USERS)):
         return
 
     texts = await get_filters(grp_id)
@@ -230,7 +230,7 @@ async def get_all(client, message):
     await message.reply_text(
         text=filterlist,
         quote=True,
-        parse_mode="md"
+        parse_mode=enums.ParseMode.MARKDOWN
     )
         
 @Client.on_message(filters.command(Config.DELETE_FILTER_CMD))
@@ -238,7 +238,7 @@ async def deletefilter(client, message):
     userid = message.from_user.id
     chat_type = message.chat.type
 
-    if chat_type == "private":
+    if chat_type == enums.ChatType.PRIVATE:
         grpid  = await active_connection(str(userid))
         if grpid is not None:
             grp_id = grpid
@@ -251,7 +251,7 @@ async def deletefilter(client, message):
         else:
             await message.reply_text("I'm not connected to any groups!", quote=True)
 
-    elif (chat_type == "group") or (chat_type == "supergroup"):
+    elif (chat_type == enums.ChatType.GROUP) or (chat_type == enums.ChatType.SUPERGROUP):
         grp_id = message.chat.id
         title = message.chat.title
 
@@ -259,7 +259,7 @@ async def deletefilter(client, message):
         return
 
     st = await client.get_chat_member(grp_id, userid)
-    if not ((st.status == "administrator") or (st.status == "creator") or (str(userid) in Config.AUTH_USERS)):
+    if not ((st.status == enums.ChatMemberStatus.ADMINISTRATOR) or (st.status == enums.ChatMemberStatus.OWNER) or (str(userid) in Config.AUTH_USERS)):
         return
 
     try:
@@ -283,7 +283,7 @@ async def delallconfirm(client, message):
     userid = message.from_user.id
     chat_type = message.chat.type
 
-    if chat_type == "private":
+    if chat_type == enums.ChatType.PRIVATE:
         grpid  = await active_connection(str(userid))
         if grpid is not None:
             grp_id = grpid
@@ -297,7 +297,7 @@ async def delallconfirm(client, message):
             await message.reply_text("I'm not connected to any groups!", quote=True)
             return
 
-    elif (chat_type == "group") or (chat_type == "supergroup"):
+    elif (chat_type == enums.ChatType.GROUP) or (chat_type == enums.ChatType.SUPERGROUP):
         grp_id = message.chat.id
         title = message.chat.title
 
@@ -305,7 +305,7 @@ async def delallconfirm(client, message):
         return
 
     st = await client.get_chat_member(grp_id, userid)
-    if (st.status == "creator") or (str(userid) in Config.AUTH_USERS):
+    if (st.status == enums.ChatMemberStatus.OWNER) or (str(userid) in Config.AUTH_USERS):
         await message.reply_text(
             f"This will delete all filters from '{title}'.\nDo you want to continue??",
             reply_markup=InlineKeyboardMarkup([
