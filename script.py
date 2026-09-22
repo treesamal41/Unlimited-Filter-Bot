@@ -58,6 +58,6 @@ See <i>/help</i> for commands and more details.</b>
 
 ⭕️<b>Language :</b> <code>Python3</code>
 
-⭕️<b>Library :</b> <a href='https://docs.pyrogram.org/'>Pyrogram 1.0.7</a> 
+⭕️<b>Library :</b> <a href='https://docs.pyrogram.org/'>Pyrogram 2.x</a> 
 
 """
